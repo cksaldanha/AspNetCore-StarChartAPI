@@ -58,5 +58,65 @@ namespace StarChart.Controllers
 
             return Ok(celestialObjects);
         }
+
+        [HttpPost]
+        public IActionResult Create([FromBody]CelestialObject model)
+        {
+            var celestialObject = new CelestialObject
+            {
+                Id = model.Id,
+                Name = model.Name,
+                OrbitalPeriod = model.OrbitalPeriod,
+                OrbitedObjectId = model.OrbitedObjectId,
+                Satellites = model.Satellites
+            };
+
+            _context.CelestialObjects.Add(celestialObject);
+            _context.SaveChanges();
+
+            return CreatedAtRoute("GetById", new { id = celestialObject.Id }, celestialObject);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, [FromBody]CelestialObject model)
+        {
+            var celestialObject = _context.CelestialObjects.SingleOrDefault(c => c.Id == id);
+            if (celestialObject == null) return NotFound();
+
+            celestialObject.Name = model.Name;
+            celestialObject.OrbitalPeriod = model.OrbitalPeriod;
+            celestialObject.OrbitedObjectId = model.OrbitedObjectId;
+
+            _context.CelestialObjects.Update(celestialObject);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id}/{name}")]
+        public IActionResult RenameObject(int id, string name)
+        {
+            var celestialObject = _context.CelestialObjects.SingleOrDefault(c => c.Id == id);
+            if (celestialObject == null) return NotFound();
+
+            celestialObject.Name = name;
+            _context.Update(celestialObject);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var celestialObjects = _context.CelestialObjects.Where(c => c.Id == id || c.OrbitedObjectId == id).ToList();
+
+            if (celestialObjects.Count == 0) return NotFound();
+
+            _context.CelestialObjects.RemoveRange(celestialObjects);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
     }
 }
